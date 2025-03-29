@@ -1,0 +1,296 @@
+# DO LOGIN #
+POST http://localhost:3000/session  HTTP/1.1
+content-type: application/json
+
+{
+    "username": "napo"
+}
+
+###
+
+#DO LOGIN#
+POST http://localhost:3000/session  HTTP/1.1
+content-type: application/json
+
+{
+    "username": "blallo"
+}
+
+###
+
+#DO LOGIN#
+POST http://localhost:3000/session  HTTP/1.1
+content-type: application/json
+
+{
+    "username": "lachilachete"
+}
+
+###
+#DO LOGIN#
+POST http://localhost:3000/session  HTTP/1.1
+content-type: application/json
+
+{
+    "username": "vanzini"
+}
+###
+#DO LOGIN#
+POST http://localhost:3000/session  HTTP/1.1
+content-type: application/json
+
+{
+    "username": "carro"
+}
+
+###
+
+#DO LOGIN#
+POST http://localhost:3000/session  HTTP/1.1
+content-type: application/json
+
+{
+    "username": "Balsamo"
+}
+
+###
+
+#CHANGE USERNAME#
+PUT http://localhost:3000/user/5/username HTTP/1.1
+Authorization: 5
+content-type: application/json
+
+{
+    "username": "Girolamo"
+}
+###
+
+#CHANGE USERNAME#
+PUT http://localhost:3000/user/2/username HTTP/1.1
+Authorization: 2
+content-type: application/json
+
+{
+    "username": "Balsamo"
+}
+###
+
+# CREATE GROUP #
+POST http://localhost:3000/user/1/groups  HTTP/1.1
+Authorization: 1
+content-type: application/json
+
+{
+    "groupname": "ferrari",
+    "usernamelist" : [ "ludo", "lachi"]
+        
+    
+}
+
+###
+
+# CREATE GROUP #
+POST http://localhost:3000/user/2/groups  HTTP/1.1
+Authorization: 2
+content-type: application/json
+
+{
+    "groupname": "baralli",
+    "usernamelist" : [ "napo", "vanzini"]
+        
+    
+}
+
+###
+
+# CREATE GROUP #
+POST http://localhost:3000/user/1/groups  HTTP/1.1
+Authorization: 1
+content-type: application/json
+
+{
+    "groupname": "bordelli",
+    "usernamelist" : [ "carro", "Girolamo", "lachilachete"]
+        
+    
+}
+###
+
+# ADD TO GROUP#
+POST http://localhost:3000/user/1/groups/1  HTTP/1.1
+Authorization: 1
+content-type: application/json
+
+{
+    "username" :  "carro"
+        
+    
+}
+
+### 
+# ADD TO GROUP#
+PUT  http://localhost:3000/user/1/groups/1  HTTP/1.1
+Authorization: 1
+content-type: application/json
+
+{
+    "username" :  "mattia"
+        
+    
+}
+
+
+###
+#LEAVE GROUP#
+DELETE http://localhost:3000/user/1/groups/1  HTTP/1.1
+Authorization: 1
+
+###
+#LEAVE GROUP#
+DELETE http://localhost:3000/user/2/groups/1  HTTP/1.1
+Authorization: 2
+
+###
+#LEAVE GROUP#
+DELETE http://localhost:3000/user/3/groups/1  HTTP/1.1
+Authorization: 3
+
+###
+
+# CHANGE GROUP NAME#
+PUT http://localhost:3000/user/1/groups/1/groupname  HTTP/1.1
+Authorization: 1
+content-type: application/json
+
+{
+    "groupname": "droga"
+}
+
+###
+
+# CREATE CONVERSATION #
+PUT http://localhost:3000/user/1/conversation/2  HTTP/1.1
+Authorization: 1
+content-type: application/json
+
+{
+    "message": "ciao"
+}
+###
+
+# CREATE CONVERSATION #
+PUT http://localhost:3000/user/2/conversation/3  HTTP/1.1
+Authorization: 2
+content-type: application/json
+
+{
+    "message": "miao"
+}
+
+###
+
+# CREATE CONVERSATION #
+PUT http://localhost:3000/user/3/conversation/4  HTTP/1.1
+Authorization: 3
+content-type: application/json
+
+{
+    "message": "miao"
+}
+
+###
+
+#SEND MESSAGE#
+POST http://localhost:3000/user/4/conversation/3/messages  HTTP/1.1
+Authorization: 4
+content-type: application/json
+
+{
+    "message": "a patato"
+}
+
+###
+
+#SEND MESSAGE#
+POST http://localhost:3000/user/1/conversation/3/messages  HTTP/1.1
+Authorization: 1
+content-type: application/json
+
+{
+    "txt": "anvedi chi s'è fatto vivo!!"
+}
+###
+
+#DELETE MESSAGE#
+DELETE http://localhost:3000/user/1/conversation/3/messages/1  HTTP/1.1
+Authorization: 1
+
+###
+
+#DELETE MESSAGE#
+DELETE http://localhost:3000/user/1/conversation/4/messages/1  HTTP/1.1
+Authorization: 1
+
+###
+
+#DELETE USER#
+DELETE http://localhost:3000/user/5  HTTP/1.1
+Authorization: 5
+
+###
+
+#SEARCH USER#
+GET http://localhost:3000/user?search=la HTTP/1.1
+Authorization: 1
+
+
+###
+
+#SEARCH USER#
+GET http://localhost:3000/user?search=ca HTTP/1.1
+Authorization: 1
+
+###
+
+#GET CONVERSATIONS#
+GET http://localhost:3000/user/1/conversation/1
+Authorization:1
+
+###
+
+#GET CONVERSATIONS#
+GET http://localhost:3000/user/1/conversation/3
+Authorization:1
+
+###
+
+#GET CONVERSATIONS#
+GET http://localhost:3000/user/1/conversation
+Authorization:1
+
+### 
+
+# FORWARD MESSAGE #
+POST http://localhost:3000/user/2/conversation/2/messages/1?dest=3 HTTP/1.1
+Authorization: 2
+content-type: application/json
+
+###
+
+# COMMENT MESSAGE # 
+PUT http://localhost:3000/user/2/conversation/3/messages/1/comments HTTP/1.1
+Authorization: 2
+content-type: application/json
+
+{
+    "comment":"😅"
+}
+
+###
+
+#UNCOMMENT MESSAGE#
+DELETE http://localhost:3000/user/1/conversation/4/messages/1/comments/2 HTTP/1.1
+Authorization: 1
+
+###
+
