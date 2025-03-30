@@ -1,7 +1,9 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -75,12 +77,33 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 			return
 		}
 	}
-
-	// get messagetxt from body
 	var message Message
-	if err := json.NewDecoder(r.Body).Decode(&message); err != nil {
-		BadRequest(w, err, ctx, "Bad Request")
+	// Check if the size of the image is less than 5MB
+	err = r.ParseMultipartForm(5 << 20)
+	if err != nil {
+		BadRequest(w, err, ctx, "Image too big")
 		return
+	}
+	message.MessageTXT = r.FormValue("text")
+	file, _, err := r.FormFile("file")
+
+	if message.MessageTXT == "" && file == nil {
+		BadRequest(w, err, ctx, "Bad Request 1")
+		return
+	}
+	if err == nil {
+		data, err := io.ReadAll(file)
+		if err != nil {
+			BadRequest(w, err, ctx, "Bad Request 2")
+			return
+		}
+		fileType := http.DetectContentType(data)
+		if fileType != "image/jpeg" && fileType != "image/gif" {
+			BadRequest(w, err, ctx, "Bad Request 3")
+			return
+		}
+		defer func() { err = file.Close() }()
+		message.Photo = base64.StdEncoding.EncodeToString(data)
 	}
 
 	message.UserID = userID

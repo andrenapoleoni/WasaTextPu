@@ -30,6 +30,7 @@ type Message struct {
 	MessageTXT     string    `json:"message"`
 	Timestamp      time.Time `json:"time"`
 	Forwarded      bool      `json:"forwarded"`
+	Photo          string    `json:"photo"`
 }
 
 // membergroup struct

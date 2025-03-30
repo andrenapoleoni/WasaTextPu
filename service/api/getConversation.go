@@ -89,6 +89,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 		MessageTXT     string `json:"txt"`
 		Timestamp      string `json:"time"`
 		Forwarded      bool   `json:"forwarded"`
+		Photo          string `json:"photo"`
 	}
 	type CommentR struct {
 		CommentTXT string `json:"commentTXT"`
@@ -132,6 +133,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 		mex.UserID = msg.UserID
 		mex.MessageTXT = msg.MessageTXT
 		mex.Forwarded = msg.Forwarded
+		mex.Photo = msg.Photo
 
 		mex.Timestamp = message.Timestamp.Format("15:04")
 		var Comments []CommentR

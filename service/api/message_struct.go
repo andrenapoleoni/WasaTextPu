@@ -13,6 +13,7 @@ type Message struct {
 	MessageTXT     string    `json:"txt"`
 	Timestamp      time.Time `json:"time"`
 	Forwarded      bool      `json:"forwarded"`
+	Photo          string    `json:"photo"`
 }
 
 // from database
@@ -23,6 +24,7 @@ func (m *Message) FromDatabase(dbMessage database.Message) error {
 	m.MessageTXT = dbMessage.MessageTXT
 	m.Timestamp = dbMessage.Timestamp
 	m.Forwarded = dbMessage.Forwarded
+	m.Photo = dbMessage.Photo
 
 	return nil
 }
@@ -36,5 +38,6 @@ func (m *Message) ToDatabase() database.Message {
 		MessageTXT:     m.MessageTXT,
 		Timestamp:      m.Timestamp,
 		Forwarded:      m.Forwarded,
+		Photo:          m.Photo,
 	}
 }

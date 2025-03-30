@@ -20,6 +20,7 @@ var sql_MESSAGETABLE = ` CREATE TABLE IF NOT EXISTS Message
 	received BOOL,
 	watched BOOL,
 	forwarded BOOL,
+	photo TEXT,
 	PRIMARY KEY(messageID, conversationID)
 	
 );`

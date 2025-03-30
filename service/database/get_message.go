@@ -26,7 +26,7 @@ func (db *appdbimpl) GetMessage(conversationID int, messageID int) (Message, err
 func (db *appdbimpl) GetAllMessage(conversationID int) ([]Message, error) {
 	// get all message from database
 	var messages []Message
-	rows, err := db.c.Query("SELECT messageID, message, userID,forwarded,TIMESTAMP FROM Message WHERE conversationID = ?;", conversationID)
+	rows, err := db.c.Query("SELECT messageID, message, userID,forwarded,TIMESTAMP,photo FROM Message WHERE conversationID = ?;", conversationID)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return messages, err
 	}
@@ -34,7 +34,7 @@ func (db *appdbimpl) GetAllMessage(conversationID int) ([]Message, error) {
 
 	for rows.Next() {
 		var message Message
-		err := rows.Scan(&message.MessageID, &message.MessageTXT, &message.UserID, &message.Forwarded, &message.Timestamp)
+		err := rows.Scan(&message.MessageID, &message.MessageTXT, &message.UserID, &message.Forwarded, &message.Timestamp, &message.Photo)
 		if err != nil {
 			return messages, err
 		}

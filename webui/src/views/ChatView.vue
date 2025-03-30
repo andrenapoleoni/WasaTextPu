@@ -29,29 +29,35 @@ export default{
       convList: JSON.parse(localStorage.conversationList || "[]"),
       intervalId: null,
       showBigPhoto:false,
+      photoToSend:null,
+      errormsg: null,
 
     };
   },
   methods: {
     async sendMessage() {
-        if (this.newMessage=="") throw "impossible send an empty message"
+        if (this.newMessage=="" && this.photoToSend== null) throw "impossible send an empty message"
       
         try {
           // Send the message to the server
           console.log("ConvID:", this.convID,"groupID:",this.groupId,"token:",sessionStorage.token,"userId:",sessionStorage.userID);
-          if (this.groupId !== 0) {
+          const formData = new FormData();
+          if (this.photoToSend) {
+            formData.append("file", this.photoToSend);
+          }else{
+            formData.append("file", null);
+          }
+            formData.append("text", this.newMessage);
+            
             await this.$axios.post(
               `/user/${sessionStorage.userID}/conversation/${this.convID}/messages`,
-              { txt: this.newMessage },
+              formData,
               { headers: { Authorization: sessionStorage.token } }
             );
-          } else
-          await this.$axios.post(
-            `/user/${sessionStorage.userID}/conversation/${this.convID}/messages`,
-            { txt: this.newMessage },
-            { headers: { Authorization: sessionStorage.token } }
-          );
+          
           console.log("Message sent:", this.newMessage);
+          this.photoToSend = null; // Reset the photo to send
+          
           
           
 
@@ -86,6 +92,18 @@ export default{
     },
     showphoto(){
       this.showBigPhoto=!this.showBigPhoto;
+    },
+    triggerFileInput() {
+      this.$refs.fileInput.click();
+    },
+    sendPhoto(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.photoToSend = file;
+        console.log("File to send:", this.photoToSend);
+        this.sendMessage();
+        
+      }
     },
 
     
@@ -128,6 +146,7 @@ export default{
 
     },
     
+    
     async check() {
       // Check if the conversation ID is valid
       if (!this.convID || this.convID === "null") {
@@ -149,7 +168,10 @@ export default{
   } else {
     this.dropdownIndex = index; // Apre il dropdown per il messaggio cliccato
   }
-  },
+  console.log("Dropdown index:", this.dropdownIndex);
+    },
+ 
+  
 
     opendModal()
     {
@@ -207,6 +229,11 @@ export default{
       } catch (e) {
         alert("Error deleting message: " + e.toString());
       }
+    },
+
+    async replyMessage(msg) {
+      console.log("Replying to message:", msg);
+      
     },
     showModalReaction(msg) {
       console.log("msg", msg.message)
@@ -310,16 +337,21 @@ export default{
     
     <div class="chat-messages">
   <div
+    
     v-for="(msg, index) in messages"
     :key="index"
     :class="msg.user?.username === owner ? 'message-out' : 'message-in'"
     @click="toggleDropdown(index)"
   >
+    
+      <img class="messagephoto" v-if="msg?.message?.photo!=null" :src="`data:image/jpeg;base64,${msg.message.photo}`" alt="Message Photo" @click="showBigPhoto=!showBigPhoto"/>
+    
+  
     <!-- Mostra il nome dell'utente solo se il messaggio è ricevuto e la chat è di gruppo -->
     <template v-if="Number(groupId) !== 0 && msg.user?.username !== owner">
       <div class="message-sender">{{ msg.user?.username }}</div>
     </template>
-    <div class= "forwarded" v-if="msg.message.forwarded">Forwarded</div>
+    <div class= "forwarded" v-if="msg?.message?.forwarded">Forwarded</div>
       
     {{ msg.message.txt }}
     
@@ -327,19 +359,21 @@ export default{
     <div v-if="msg.comment && msg.comment.length">
       <div v-for="comment in msg.comment" :key="comment.username">
   {{ comment.commentTXT }} - {{ comment.username === owner ? 'Tu' : comment.username }}
-</div>
-</div>
+
      
 
      <!-- Dropdown -->
      <div v-if="dropdownIndex === index" class="dropdown-menu">
       <button v-if="msg.user?.username === owner" @click="deleteMessage(msg)">🗑️ Cancella</button>
+      <button @click="replyMessage(msg)">↩️ Rispondi</button>
       <button v-if="msg.user?.username === owner" @click="showModalForward(msg)">📨 Inoltra</button>
       <button v-if="msg.user?.username !== owner" @click="showModalReaction(msg)">💬 Commenta</button>
       <button v-if="msg.user?.username !== owner" @click="showModalForward(msg)">📨 Inoltra</button>
     </div>
   </div>
 </div>
+  </div>
+  </div>
 
 
     <div class="chat-input">
@@ -349,6 +383,10 @@ export default{
         placeholder="Type a message"
         @keyup.enter="check"
       />
+      <input type="file" ref="fileInput" @change="sendPhoto" style="display: none;" />
+      <button class="photo-button" @click="triggerFileInput">
+         📷
+      </button>
       <button @click="check">Send</button>
     </div>
 
@@ -372,6 +410,24 @@ export default{
 </template>
 
 <style>
+.messagephoto {
+  width: 100px; /* Imposta una larghezza fissa per testare */
+  height: auto; /* Mantieni le proporzioni */
+  display: block; /* Assicurati che l'immagine sia visibile */
+}
+.photo-button {
+  margin-left: 10px;
+  padding: 10px;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.photo-button:hover {
+  background: #e0e0e0;
+}
 .bigphoto {
   position: fixed;
   top: 0;
