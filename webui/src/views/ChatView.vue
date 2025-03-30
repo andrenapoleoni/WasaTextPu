@@ -31,6 +31,8 @@ export default{
       showBigPhoto:false,
       photoToSend:null,
       errormsg: null,
+      showphotomessage : false,
+      selectedMessageph : null,
 
     };
   },
@@ -248,6 +250,18 @@ export default{
       this.modalForward = !this.modalForward;
 
     },
+    showphotomessageB(msg) {
+      
+      this.selectedMessageph= msg.message.photo;
+      this.boolshowph();
+      console.log("Selected message:", this.selectedMessageph);
+      
+  
+      
+    },
+    boolshowph(){
+      this.showphotomessage=!this.showphotomessage;
+    },
 
   
     
@@ -343,8 +357,16 @@ export default{
     :class="msg.user?.username === owner ? 'message-out' : 'message-in'"
     @click="toggleDropdown(index)"
   >
-    
-      <img class="messagephoto" v-if="msg?.message?.photo!=null" :src="`data:image/jpeg;base64,${msg.message.photo}`" alt="Message Photo" @click="showBigPhoto=!showBigPhoto"/>
+  <div v-if="dropdownIndex === index" class="dropdown-menu">
+      <button v-if="msg.user?.username === owner" @click="deleteMessage(msg)">🗑️ Cancella</button>
+      <button @click="replyMessage(msg)">↩️ Rispondi</button>
+      <button v-if="msg.user?.username === owner" @click="showModalForward(msg)">📨 Inoltra</button>
+      <button v-if="msg.user?.username !== owner" @click="showModalReaction(msg)">💬 Commenta</button>
+      <button v-if="msg.user?.username !== owner" @click="showModalForward(msg)">📨 Inoltra</button>
+      <button v-if="msg.message.photo!=''" @click="showphotomessageB(msg)" >Vedi FOTO</button>
+
+    </div>
+      <img class="messagephoto" v-if="msg.message.photo!=''" :src="`data:image/jpeg;base64,${msg.message.photo}`" />
     
   
     <!-- Mostra il nome dell'utente solo se il messaggio è ricevuto e la chat è di gruppo -->
@@ -363,13 +385,7 @@ export default{
      
 
      <!-- Dropdown -->
-     <div v-if="dropdownIndex === index" class="dropdown-menu">
-      <button v-if="msg.user?.username === owner" @click="deleteMessage(msg)">🗑️ Cancella</button>
-      <button @click="replyMessage(msg)">↩️ Rispondi</button>
-      <button v-if="msg.user?.username === owner" @click="showModalForward(msg)">📨 Inoltra</button>
-      <button v-if="msg.user?.username !== owner" @click="showModalReaction(msg)">💬 Commenta</button>
-      <button v-if="msg.user?.username !== owner" @click="showModalForward(msg)">📨 Inoltra</button>
-    </div>
+     
   </div>
 </div>
   </div>
@@ -393,7 +409,9 @@ export default{
     <div class="bigphoto" v-if="showBigPhoto">
     <img :src="`data:image/jpg;base64,${avatar}`" alt="Profile Picture" class="user-bigphoto" @click="showphoto"/>
   </div>
-
+  <div class="bigphoto" v-if="showphotomessage">
+    <img :src="`data:image/jpg;base64,${selectedMessageph}`" alt="Profile Picture" class="user-bigphoto" @click="boolshowph"/>
+  </div>
 
     <Reaction :show="modalReaction" @close="showModalReaction" :msg="selectedMessage">
       <template v-slot:header>
@@ -410,6 +428,28 @@ export default{
 </template>
 
 <style>
+.bigphoto {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(10px); /* Apply the blur effect */
+}
+
+.user-bigphoto {
+  width: 70vh; /* Use 70% of the viewport height */
+  height: 70vh;
+  max-width: 80%;
+  max-height: 80%;
+  border-radius: 50%;
+  object-fit: cover; /* Ensure the image covers the container proportionally */
+}
 .messagephoto {
   width: 100px; /* Imposta una larghezza fissa per testare */
   height: auto; /* Mantieni le proporzioni */
@@ -681,7 +721,7 @@ export default{
   
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
-  z-index: 10;
+  z-index: 1000;
   
  
  
