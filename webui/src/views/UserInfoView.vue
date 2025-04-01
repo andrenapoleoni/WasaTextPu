@@ -105,7 +105,7 @@ export default {
     </div>
     <div class="change-photo">
       <input type="file" ref="fileInput" @change="changePhoto" style="display: none;" />
-      <button @click="triggerFileInput"></button>
+      <button @click="triggerFileInput">Change photo</button>
     </div>
   </div>
   <div class="bigphoto" v-if="showBigPhoto">

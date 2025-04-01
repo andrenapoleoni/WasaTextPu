@@ -14,6 +14,7 @@ import (
 
 func (rt *_router) CreateMessageDB(message Message) (Message, error) {
 	// create message in database
+
 	messageDB, err := rt.db.CreateMessage(message.ToDatabase())
 	if err != nil {
 		return message, err
@@ -85,6 +86,10 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 	message.MessageTXT = r.FormValue("text")
+	message.Linkmessage, err = strconv.Atoi(r.FormValue("reply"))
+	if err != nil && r.FormValue("reply") != "" {
+		BadRequest(w, err, ctx, "Bad Request 1")
+	}
 	file, _, err := r.FormFile("file")
 
 	if message.MessageTXT == "" && file == nil {
@@ -108,12 +113,48 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 
 	message.UserID = userID
 	message.ConversationID = conversationID
+	message.Checkmark = false
 
 	// send message
 	message, err = rt.CreateMessageDB(message)
 	if err != nil {
 		InternalServerError(w, err, "Internal Server Error", ctx)
 		return
+	}
+
+	// add checkmark table
+	if conversation.GroupID != 0 {
+		// get users in group
+		users, err := rt.db.GetUsersInGroup(conversation.GroupID)
+		if err != nil {
+			InternalServerError(w, err, "Internal Server Error", ctx)
+			return
+		}
+		// add checkmark for each user
+		for _, user := range users {
+			if user != userID {
+
+				err = rt.db.AddCheckmark(message.MessageID, conversationID, user)
+				if err != nil {
+					InternalServerError(w, err, "Internal Server Error", ctx)
+					return
+
+				}
+			}
+		}
+	} else {
+		uzer, err := rt.db.GetUserInConversationPrivate(conversationID, userID)
+		if err != nil {
+			InternalServerError(w, err, "Internal Server Error", ctx)
+			return
+		}
+
+		err = rt.db.AddCheckmark(message.MessageID, conversationID, uzer.UserID)
+		if err != nil {
+			InternalServerError(w, err, "Internal Server Error", ctx)
+			return
+		}
+
 	}
 
 	// response

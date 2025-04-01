@@ -5,8 +5,8 @@ import (
 	"errors"
 )
 
-var query_ADDMESSAGE = `INSERT INTO Message (conversationID, userID, messageID, message,forwarded, photo)
-						VALUES (?, ?, ?, ?, ?, ?)`
+var query_ADDMESSAGE = `INSERT INTO Message (conversationID, userID, messageID, message,forwarded, photo, linkmessage, checkmark)
+						VALUES (?, ?, ?, ?, ?, ?, ?,?)`
 
 var query_MESSAGEMAXID = `SELECT MAX(messageID) FROM Message WHERE conversationID = ?`
 
@@ -18,6 +18,8 @@ func (db *appdbimpl) CreateMessage(message Message) (Message, error) {
 	m.MessageTXT = message.MessageTXT
 	m.Forwarded = message.Forwarded
 	m.Photo = message.Photo
+	m.Linkmessage = message.Linkmessage
+	m.Checkmark = message.Checkmark
 	// get last id from message
 	var _maxID = sql.NullInt64{Int64: 0, Valid: false}
 
@@ -50,7 +52,7 @@ func (db *appdbimpl) CreateMessage(message Message) (Message, error) {
 	m.MessageID = maxID + 1
 
 	// add message to database
-	_, err = db.c.Exec(query_ADDMESSAGE, m.ConversationID, m.UserID, m.MessageID, m.MessageTXT, m.Forwarded, m.Photo)
+	_, err = db.c.Exec(query_ADDMESSAGE, m.ConversationID, m.UserID, m.MessageID, m.MessageTXT, m.Forwarded, m.Photo, m.Linkmessage, m.Checkmark)
 	if err != nil {
 		return m, err
 	}

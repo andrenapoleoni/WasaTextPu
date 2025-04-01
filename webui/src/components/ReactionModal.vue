@@ -15,6 +15,7 @@ export default {
   props: {
     show: Boolean,
     msg: Object,
+    comments: Array,
   },
   data() {
     return {
@@ -29,6 +30,8 @@ export default {
 
       // Errore
       errormsg: null,
+
+      commentToDelete: null,
     };
   },
   methods: {
@@ -40,9 +43,34 @@ export default {
     // Funzione che commanta il messaggio selezionato
     async commentMessage(emoji) {
       this.errormsg = null;
+      try{
+        const url = `/user/${sessionStorage.userID}/conversation/${this.convId}/messages/${this.msg.messageID}/comments`;
+        this.$axios.put(url, { comment: emoji }, { headers: { 'Authorization': sessionStorage.token } })
+          .then(() => {
+            // Chiude il modale
+            this.closeModal();
+          })
+
+      }catch(e) {
+        this.errormsg = e.response.data;
+      }
       // Effettua una richiesta PUT per lasciare un commento al messaggio selezionato o modificare il commento già presente
-      const url = `/user/${sessionStorage.userID}/conversation/${this.convId}/messages/${this.msg.messageID}/comments`;
-      this.$axios.put(url, { comment: emoji }, { headers: { 'Authorization': sessionStorage.token } })
+      
+    },
+
+    async uncommentMessage() {
+
+      console.log("comm", this.comments);
+      
+      for (let i = 0; i < this.comments.length; i++) {
+        if (this.comments[i].username==sessionStorage.username) {
+          this.commentToDelete = this.comments[i].commentId;
+        }
+      }
+      this.errormsg = null;
+      // Effettua una richiesta DELETE per rimuovere il commento al messaggio selezionato
+      const url = `/user/${sessionStorage.userID}/conversation/${this.convId}/messages/${this.msg.messageID}/comments/${this.commentToDelete}`;
+      this.$axios.delete(url, { headers: { 'Authorization': sessionStorage.token } })
         .then(() => {
           // Chiude il modale
           this.closeModal();
@@ -50,8 +78,10 @@ export default {
         .catch(e => {
           this.errormsg = e.response.data;
         });
-    },
-  },
+
+      this.commentToDelete = null;
+  }
+  }
 };
 </script>
 
@@ -73,6 +103,9 @@ export default {
             <div class="emoji-grid">
               <div v-for="emoji in emojis" :key="emoji" class="emoji" @click="commentMessage(emoji)">
                 {{ emoji }}
+              </div>
+              <div>
+                <button @click="uncommentMessage">DELETE</button>
               </div>
             </div>
 

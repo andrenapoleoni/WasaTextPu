@@ -17,9 +17,9 @@ var sql_MESSAGETABLE = ` CREATE TABLE IF NOT EXISTS Message
 	messageID INTEGER NOT NULL,
 	message TEXT NOT NULL,
 	TIMESTAMP DATETIME DEFAULT CURRENT_TIMESTAMP,
-	received BOOL,
-	watched BOOL,
+	checkmark BOOL,
 	forwarded BOOL,
+	linkmessage int ,
 	photo TEXT,
 	PRIMARY KEY(messageID, conversationID)
 	
@@ -82,4 +82,11 @@ var sql_COMMENTTABLE = ` CREATE TABLE IF NOT EXISTS Comment
 	FOREIGN KEY(messageID, conversationID) REFERENCES Message(messageID, conversationID) ON DELETE CASCADE
 	
 	
+);`
+var sql_CHECKMARKTABLE = ` CREATE TABLE IF NOT EXISTS Checkmark
+(
+	messageID INTEGER NOT NULL,
+	userID INTEGER NOT NULL,
+	conversationID INTEGER NOT NULL
+
 );`

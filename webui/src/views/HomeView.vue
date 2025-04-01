@@ -93,8 +93,8 @@ export default {
     this.intervalId = setInterval(async () => {
       clearInterval(this.intervalId);
       await this.getMyconversations();
-      this.intervalId = setInterval(this.getMyconversations, 5000);
-    }, 5000);
+      this.intervalId = setInterval(this.getMyconversations, 7000);
+    }, 7000);
   },
   beforeUnmount() {
     document.removeEventListener("click", this.closeDropdown);

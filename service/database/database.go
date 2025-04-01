@@ -118,6 +118,14 @@ type AppDatabase interface {
 
 	GetLastMessage(conversationID int) (Message, error)
 
+	AddCheckmark(messageID int, conversationID int, userID int) error
+
+	DeleteCheckmark(messageID int, conversationID int, userID int) error
+
+	ExistCheckrow(messageID int, conversationID int) (bool, error)
+
+	UpdateMessage(messageID int, conversationID int) error
+
 	Ping() error
 }
 
@@ -138,7 +146,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		return nil, fmt.Errorf("error checking if database is empty: %w", err)
 	}
 
-	if tableCount != 7 {
+	if tableCount != 8 {
 		// -----CREATE USER TABLE ------- //
 		_, err = db.Exec(sql_USERTABLE)
 		if err != nil {
@@ -177,6 +185,11 @@ func New(db *sql.DB) (AppDatabase, error) {
 		}
 
 		_, err = db.Exec(sql_COMMENTTABLE)
+		if err != nil {
+			return nil, fmt.Errorf("error creating database structure: %w", err)
+
+		}
+		_, err = db.Exec(sql_CHECKMARKTABLE)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
 

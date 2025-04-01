@@ -90,10 +90,13 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 		Timestamp      string `json:"time"`
 		Forwarded      bool   `json:"forwarded"`
 		Photo          string `json:"photo"`
+		Linkmessage    int    `json:"linkmessage"`
+		Checkmark      bool   `json:"checkmark"`
 	}
 	type CommentR struct {
 		CommentTXT string `json:"commentTXT"`
 		Username   string `json:"username"`
+		CommentId  int    `json:"commentId"`
 	}
 
 	type MessageResponse struct {
@@ -122,6 +125,30 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 		}
 		var rsp MessageResponse
 		var msg Message
+		//fmt.Println("userID", userID, "message.UserID", message.UserID)
+		if message.UserID != userID {
+			err = rt.db.DeleteCheckmark(message.MessageID, message.ConversationID, userID)
+			if err != nil {
+				InternalServerError(w, err, "Internal Server Error 6", ctx)
+				return
+			}
+
+		}
+		exist, err := rt.db.ExistCheckrow(message.MessageID, message.ConversationID)
+		if err != nil {
+			InternalServerError(w, err, "Internal Server Error 6", ctx)
+			return
+		}
+
+		if !exist {
+			err := rt.db.UpdateMessage(message.MessageID, message.ConversationID)
+			if err != nil {
+				InternalServerError(w, err, "Internal Server Error 7", ctx)
+				return
+			}
+
+		}
+
 		err = msg.FromDatabase(message)
 		if err != nil {
 			InternalServerError(w, err, "Internal Server Error 6", ctx)
@@ -134,8 +161,10 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 		mex.MessageTXT = msg.MessageTXT
 		mex.Forwarded = msg.Forwarded
 		mex.Photo = msg.Photo
-
+		mex.Linkmessage = msg.Linkmessage
 		mex.Timestamp = message.Timestamp.Format("15:04")
+		mex.Checkmark = msg.Checkmark
+
 		var Comments []CommentR
 		commentsDB, err := rt.db.GetComments(message.MessageID, message.ConversationID)
 		if err != nil {
@@ -146,6 +175,7 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 		for _, comment := range commentsDB {
 			var CommentR CommentR
 			CommentR.CommentTXT = comment.CommentTXT
+			CommentR.CommentId = comment.CommentID
 
 			userDB, err := rt.db.GetUserByID(comment.UserID)
 			if err != nil {

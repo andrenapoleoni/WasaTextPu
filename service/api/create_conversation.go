@@ -99,10 +99,22 @@ func (rt *_router) createConversation(w http.ResponseWriter, r *http.Request, ps
 
 	message.ConversationID = c.ConversationID
 	message.UserID = userID
+	message.Checkmark = false
 	// send message
 	message, err = rt.CreateMessageDB(message)
 	if err != nil {
 		InternalServerError(w, err, "Internal Server Error6", ctx)
+		return
+	}
+	uzer, err := rt.db.GetUserInConversationPrivate(message.ConversationID, message.UserID)
+	if err != nil {
+		InternalServerError(w, err, "Internal Server Error7", ctx)
+		return
+	}
+
+	err = rt.db.AddCheckmark(message.MessageID, message.ConversationID, uzer.UserID)
+	if err != nil {
+		InternalServerError(w, err, "Internal Server Error8", ctx)
 		return
 	}
 

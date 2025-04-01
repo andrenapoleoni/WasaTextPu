@@ -5,7 +5,7 @@ import (
 	"errors"
 )
 
-var query_GETMESSAGE = `SELECT message, userID,forwarded FROM Message WHERE messageID = ? AND conversationID = ?;`
+var query_GETMESSAGE = `SELECT message, userID,forwarded,photo FROM Message WHERE messageID = ? AND conversationID = ?;`
 var query_GETLASTMESSAGE = `SELECT message, userID,TIMESTAMP FROM Message WHERE conversationID = ? ORDER BY messageID DESC LIMIT 1;`
 
 func (db *appdbimpl) GetMessage(conversationID int, messageID int) (Message, error) {
@@ -14,7 +14,7 @@ func (db *appdbimpl) GetMessage(conversationID int, messageID int) (Message, err
 	message.MessageID = messageID
 	message.ConversationID = conversationID
 
-	err := db.c.QueryRow(query_GETMESSAGE, messageID, conversationID).Scan(&message.MessageTXT, &message.UserID, &message.Forwarded)
+	err := db.c.QueryRow(query_GETMESSAGE, messageID, conversationID).Scan(&message.MessageTXT, &message.UserID, &message.Forwarded, &message.Photo)
 	if err != nil {
 		return message, err
 	}
@@ -26,7 +26,7 @@ func (db *appdbimpl) GetMessage(conversationID int, messageID int) (Message, err
 func (db *appdbimpl) GetAllMessage(conversationID int) ([]Message, error) {
 	// get all message from database
 	var messages []Message
-	rows, err := db.c.Query("SELECT messageID, message, userID,forwarded,TIMESTAMP,photo FROM Message WHERE conversationID = ?;", conversationID)
+	rows, err := db.c.Query("SELECT messageID, message, userID,forwarded,TIMESTAMP,photo,linkmessage,checkmark FROM Message WHERE conversationID = ?;", conversationID)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return messages, err
 	}
@@ -34,7 +34,7 @@ func (db *appdbimpl) GetAllMessage(conversationID int) ([]Message, error) {
 
 	for rows.Next() {
 		var message Message
-		err := rows.Scan(&message.MessageID, &message.MessageTXT, &message.UserID, &message.Forwarded, &message.Timestamp, &message.Photo)
+		err := rows.Scan(&message.MessageID, &message.MessageTXT, &message.UserID, &message.Forwarded, &message.Timestamp, &message.Photo, &message.Linkmessage, &message.Checkmark)
 		if err != nil {
 			return messages, err
 		}

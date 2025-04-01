@@ -33,6 +33,8 @@ export default{
       errormsg: null,
       showphotomessage : false,
       selectedMessageph : null,
+      replyId: null,
+      comments: [],
 
     };
   },
@@ -49,7 +51,13 @@ export default{
           }else{
             formData.append("file", null);
           }
+          
             formData.append("text", this.newMessage);
+          if(this.replyId){
+            formData.append("reply", this.replyId);
+          }else{
+            formData.append("reply", "");
+          }  
             
             await this.$axios.post(
               `/user/${sessionStorage.userID}/conversation/${this.convID}/messages`,
@@ -64,6 +72,7 @@ export default{
           
 
           this.newMessage = ""; // Clear the input field
+          this.replyId = null; // Reset the reply ID
           this.getConversation();
         } catch (e) {
           alert("Error sending message: " + e.toString());
@@ -235,11 +244,14 @@ export default{
 
     async replyMessage(msg) {
       console.log("Replying to message:", msg);
+      this.replyId = msg.message.messageID;
+      
       
     },
     showModalReaction(msg) {
       console.log("msg", msg.message)
       this.selectedMessage= msg.message;
+      this.comments= msg.comment;
       console.log("Selected message:", this.selectedMessage);
   
       this.modalReaction=!this.modalReaction;
@@ -251,6 +263,8 @@ export default{
 
     },
     showphotomessageB(msg) {
+
+      console.log("masg", msg)
       
       this.selectedMessageph= msg.message.photo;
       this.boolshowph();
@@ -282,8 +296,8 @@ export default{
     this.intervalId = setInterval(async () => {
         clearInterval(this.intervalId);
         await this.getConversation();
-        this.intervalId = setInterval(this.getConversation, 5000);
-      }, 5000);
+        this.intervalId = setInterval(this.getConversation, 7000);
+      }, 7000);
     },
     
   
@@ -350,6 +364,7 @@ export default{
     </div>
     
     <div class="chat-messages">
+      
   <div
     
     v-for="(msg, index) in messages"
@@ -357,6 +372,10 @@ export default{
     :class="msg.user?.username === owner ? 'message-out' : 'message-in'"
     @click="toggleDropdown(index)"
   >
+  <!-- Mostra il nome dell'utente solo se il messaggio è ricevuto e la chat è di gruppo -->
+  <template v-if="Number(groupId) !== 0 && msg.user?.username !== owner">
+      <div class="message-sender">{{ msg.user?.username }}</div>
+    </template>
   <div v-if="dropdownIndex === index" class="dropdown-menu">
       <button v-if="msg.user?.username === owner" @click="deleteMessage(msg)">🗑️ Cancella</button>
       <button @click="replyMessage(msg)">↩️ Rispondi</button>
@@ -366,30 +385,46 @@ export default{
       <button v-if="msg.message.photo!=''" @click="showphotomessageB(msg)" >Vedi FOTO</button>
 
     </div>
+    <div class= "forwarded" v-if="msg?.message?.forwarded">Forwarded</div>
       <img class="messagephoto" v-if="msg.message.photo!=''" :src="`data:image/jpeg;base64,${msg.message.photo}`" />
     
   
-    <!-- Mostra il nome dell'utente solo se il messaggio è ricevuto e la chat è di gruppo -->
-    <template v-if="Number(groupId) !== 0 && msg.user?.username !== owner">
-      <div class="message-sender">{{ msg.user?.username }}</div>
-    </template>
-    <div class= "forwarded" v-if="msg?.message?.forwarded">Forwarded</div>
+      <div class="messagereply" v-if="messages.find(mex => mex.message.messageID===msg.message.linkmessage)">
+        <div>
+  
+          <span>{{messages.find(mex => mex.message.messageID===msg.message.linkmessage).user.username}}:</span>
+        </div>
+        <span>{{messages.find(mex => mex.message.messageID===msg.message.linkmessage).message.txt}}</span>
+      </div>
+    
       
+      
+     
     {{ msg.message.txt }}
     
      <span v-if="msg.message.time" class="message-time">{{ msg.message.time }}</span> 
+     <span v-if="msg.user?.username === owner && !msg.message.checkmark" class="checkmark">✔</span>
+<span v-else-if="msg.user?.username === owner && msg.message.checkmark" class="checkmark">✔✔</span>
     <div v-if="msg.comment && msg.comment.length">
       <div v-for="comment in msg.comment" :key="comment.username">
   {{ comment.commentTXT }} - {{ comment.username === owner ? 'Tu' : comment.username }}
 
      
 
-     <!-- Dropdown -->
+    
      
   </div>
 </div>
   </div>
   </div>
+<div class:="messagereply" v-if="replyId" >
+  <div>
+    <span>{{messages.find(mex => mex.message.messageID === replyId).user.username}}</span>
+    </div>
+    <div>
+    <span>{{messages.find(mex => mex.message.messageID === replyId).message.txt}}</span>
+  </div>
+  </div> 
 
 
     <div class="chat-input">
@@ -413,7 +448,7 @@ export default{
     <img :src="`data:image/jpg;base64,${selectedMessageph}`" alt="Profile Picture" class="user-bigphoto" @click="boolshowph"/>
   </div>
 
-    <Reaction :show="modalReaction" @close="showModalReaction" :msg="selectedMessage">
+    <Reaction :show="modalReaction" @close="showModalReaction" :msg="selectedMessage" :comments="comments"> >
       <template v-slot:header>
         <h3>Choose an emoji</h3>
       </template>
@@ -428,6 +463,25 @@ export default{
 </template>
 
 <style>
+.messagereply {
+  background-color: #f1f1f1; /* Sfondo leggermente grigio */
+  border-left: 3px solid #d3d3d3; /* Bordo a sinistra per evidenziare */
+  padding: 5px 10px; /* Spaziatura interna */
+  margin: 5px 0; /* Spaziatura esterna */
+  border-radius: 5px; /* Angoli arrotondati */
+  font-size: 12px; /* Testo più piccolo */
+  color: #6c757d; /* Grigio chiaro */
+}
+
+.messagereply span {
+  display: block; /* Ogni elemento su una nuova riga */
+  margin-bottom: 2px; /* Spaziatura tra username e messaggio */
+}
+
+.messagereply span:first-child {
+  font-weight: bold; /* Username in grassetto */
+  color: #495057; /* Grigio leggermente più scuro per l'username */
+}
 .bigphoto {
   position: fixed;
   top: 0;

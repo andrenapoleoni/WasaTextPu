@@ -35,7 +35,7 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, ps htt
 	userID := ctx.UserID
 
 	if profileUserID != userID {
-		Forbidden(w, err, ctx, "Forbidden")
+		Forbidden(w, err, ctx, "Forbidden 1")
 		return
 	}
 	// get conversation id from endopoint
@@ -93,18 +93,18 @@ func (rt *_router) commentMessage(w http.ResponseWriter, r *http.Request, ps htt
 			return
 		}
 		if !exist {
-			Forbidden(w, err, ctx, "Forbidden")
+			Forbidden(w, err, ctx, "Forbidden 2")
 			return
 		}
 	} else {
 		// group conversation
-		exist, err := rt.db.ExistUserInGroup(conversation.GroupID, userID)
+		exist, err := rt.db.ExistUserInGroup(userID, conversation.GroupID)
 		if err != nil {
 			InternalServerError(w, err, "Internal Server Error", ctx)
 			return
 		}
 		if !exist {
-			Forbidden(w, err, ctx, "Forbidden")
+			Forbidden(w, err, ctx, "Forbidden 3")
 			return
 		}
 	}

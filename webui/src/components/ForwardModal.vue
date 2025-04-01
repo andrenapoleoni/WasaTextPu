@@ -32,6 +32,7 @@ export default {
       console.log("Selected users:", this.selectedUsers);
       console.log("Selected groups:", this.selectedGroups);
       try {
+       
         console.log("dentro try");
         for (const conv of this.selectedUsers) {  // Cambiato da "in" a "of"
           console.log("dentro for 1");

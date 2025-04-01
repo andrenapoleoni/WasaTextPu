@@ -14,6 +14,8 @@ type Message struct {
 	Timestamp      time.Time `json:"time"`
 	Forwarded      bool      `json:"forwarded"`
 	Photo          string    `json:"photo"`
+	Linkmessage    int       `json:"linkmessage"`
+	Checkmark      bool      `json:"checkmark"`
 }
 
 // from database
@@ -25,6 +27,8 @@ func (m *Message) FromDatabase(dbMessage database.Message) error {
 	m.Timestamp = dbMessage.Timestamp
 	m.Forwarded = dbMessage.Forwarded
 	m.Photo = dbMessage.Photo
+	m.Linkmessage = dbMessage.Linkmessage
+	m.Checkmark = dbMessage.Checkmark
 
 	return nil
 }
@@ -39,5 +43,7 @@ func (m *Message) ToDatabase() database.Message {
 		Timestamp:      m.Timestamp,
 		Forwarded:      m.Forwarded,
 		Photo:          m.Photo,
+		Linkmessage:    m.Linkmessage,
+		Checkmark:      m.Checkmark,
 	}
 }

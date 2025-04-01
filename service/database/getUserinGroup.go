@@ -10,6 +10,10 @@ func (db *appdbimpl) GetUsersInGroup(groupID int) ([]int, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
+		if rows.Err() != nil {
+			return nil, err
+		}
+
 		var user int
 		err := rows.Scan(&user)
 		if err != nil {
